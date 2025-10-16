@@ -41,9 +41,9 @@ app.post('/api/send-email', async (req, res) => {
 
     // Validate required fields
     if (!fullName || !email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Full name and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Full name and email are required'
       });
     }
 
@@ -98,22 +98,22 @@ app.post('/api/send-email', async (req, res) => {
     // Send email
     await transporter.sendMail(mailOptions);
 
-    res.json({ 
-      success: true, 
-      message: 'Email sent successfully!' 
+    res.json({
+      success: true,
+      message: 'Email sent successfully!'
     });
 
   } catch (error) {
     console.error('Error sending email:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to send email. Please try again later.' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send email. Please try again later.'
     });
   }
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health_check', (req, res) => {
   res.json({ status: 'Server is running!' });
 });
 
