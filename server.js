@@ -42,14 +42,25 @@ const submitToGoogleForm = async (data) => {
   if (!GOOGLE_FORM_WEBAPP_URL) return;
   try {
     const params = new URLSearchParams();
-    Object.entries(data).forEach(([key, value]) => {
+
+    // Map to exact Google Sheet column headers
+    const mapped = {
+      'Full Name': data.fullName,
+      'Company': data.company,
+      'Looking For': data.lookingFor,
+      'Quantity': data.quantity,
+      'Email': data.email,
+      'Phone': data.phone,
+      'Message': data.message,
+    };
+
+    Object.entries(mapped).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         params.append(key, String(value));
       }
     });
     params.append('submittedAt', new Date().toISOString());
-    console.log('params', params);
-    console.log('params to string', params.toString());
+
     const resp = await fetch(GOOGLE_FORM_WEBAPP_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
