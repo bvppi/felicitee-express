@@ -148,13 +148,13 @@ app.post('/api/send-email', async (req, res) => {
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health_check', (req, res) => {
   res.json({ status: 'Server is running!' });
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Health check: http://localhost:${PORT}/api/health_check`);
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     console.log('Email transport: AWS SES SMTP configured');
     console.log(`SMTP host: ${process.env.SMTP_HOST || 'email-smtp.ap-southeast-1.amazonaws.com'}`);
