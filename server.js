@@ -2,10 +2,13 @@ import express from 'express';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import * as XLSX from 'xlsx';
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+// Add Google Form Web App URL (override with env if desired)
+const GOOGLE_FORM_WEBAPP_URL = process.env.GOOGLE_FORM_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbw9sVlPw0U8z3QPt-hdb2DbMmJe_Em7sU9fShA8eKCgldHbgGhuMP2i9zBaeL7JLF_t/exec';
 
 // Middleware
 app.use(cors());
@@ -34,6 +37,35 @@ const createTransporter = () => {
   });
 };
 
+// Helper: forward contact fields to Google Form Web App
+const submitToGoogleForm = async (data) => {
+  if (!GOOGLE_FORM_WEBAPP_URL) return;
+  try {
+    const params = new URLSearchParams();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, String(value));
+      }
+    });
+    params.append('submittedAt', new Date().toISOString());
+    console.log('params', params);
+    console.log('params to string', params.toString());
+    const resp = await fetch(GOOGLE_FORM_WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      throw new Error(`Google Form submission failed: ${resp.status} ${text}`);
+    }
+  } catch (err) {
+    // Log and continue; don't fail the main request on Google sync errors
+    console.error('submitToGoogleForm error:', err);
+  }
+};
+
 // Email sending endpoint
 app.post('/api/send-email', async (req, res) => {
   try {
@@ -51,8 +83,8 @@ app.post('/api/send-email', async (req, res) => {
     const transporter = createTransporter();
 
     // Determine recipient and sender from env
-    const contactEmail = process.env.CONTACT_EMAIL_TO || 'feliciteemnl@gmail.com';
-    const fromAddress = process.env.CONTACT_EMAIL_FROM || 'feliciteemnl@gmail.com';
+    const contactEmail = process.env.CONTACT_EMAIL_TO || 'gifts@felicitee.com';
+    const fromAddress = process.env.CONTACT_EMAIL_FROM || 'gifts@felicitee.com';
 
     // Email content
     const mailOptions = {
@@ -97,6 +129,9 @@ app.post('/api/send-email', async (req, res) => {
 
     // Send email
     await transporter.sendMail(mailOptions);
+
+    // Forward to Google Form Web App (best-effort)
+    await submitToGoogleForm({ fullName, company, lookingFor, quantity, email, phone, message });
 
     res.json({ 
       success: true, 
