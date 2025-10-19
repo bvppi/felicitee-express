@@ -84,9 +84,9 @@ app.post('/api/send-email', async (req, res) => {
 
     // Validate required fields
     if (!fullName || !email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Full name and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Full name and email are required'
       });
     }
 
@@ -144,28 +144,28 @@ app.post('/api/send-email', async (req, res) => {
     // Forward to Google Form Web App (best-effort)
     await submitToGoogleForm({ fullName, company, lookingFor, quantity, email, phone, message });
 
-    res.json({ 
-      success: true, 
-      message: 'Email sent successfully!' 
+    res.json({
+      success: true,
+      message: 'Email sent successfully!'
     });
 
   } catch (error) {
     console.error('Error sending email:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to send email. Please try again later.' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send email. Please try again later.'
     });
   }
 });
 
 // Health check endpoint
-app.get('/api/health_check', (req, res) => {
+app.get('/status_check', (req, res) => {
   res.json({ status: 'Server is running!' });
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health_check`);
+  console.log(`Health check: http://localhost:${PORT}/status_check`);
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     console.log('Email transport: AWS SES SMTP configured');
     console.log(`SMTP host: ${process.env.SMTP_HOST || 'email-smtp.ap-southeast-1.amazonaws.com'}`);
