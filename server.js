@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 // Add Google Form Web App URL (override with env if desired)
 const GOOGLE_FORM_WEBAPP_URL = process.env.GOOGLE_FORM_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbw9sVlPw0U8z3QPt-hdb2DbMmJe_Em7sU9fShA8eKCgldHbgGhuMP2i9zBaeL7JLF_t/exec';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LfKVPArAAAAAEFFIWNo7f9TmT1jojntSCs-mqCM';
@@ -53,6 +53,7 @@ const submitToGoogleForm = async (data) => {
       'Email': data.email,
       'Phone': data.phone,
       'Message': data.message,
+      'Created Date': new Date().toLocaleString(),
     };
 
     Object.entries(mapped).forEach(([key, value]) => {
@@ -85,9 +86,9 @@ app.post('/api/send-email', async (req, res) => {
 
     // Validate required fields
     if (!fullName || !email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Full name and email are required'
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Full name and email are required' 
       });
     }
 
@@ -165,28 +166,28 @@ app.post('/api/send-email', async (req, res) => {
     // Forward to Google Form Web App (best-effort)
     await submitToGoogleForm({ fullName, company, lookingFor, quantity, email, phone, message });
 
-    res.json({
-      success: true,
-      message: 'Email sent successfully!'
+    res.json({ 
+      success: true, 
+      message: 'Email sent successfully!' 
     });
 
   } catch (error) {
     console.error('Error sending email:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to send email. Please try again later.'
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to send email. Please try again later.' 
     });
   }
 });
 
 // Health check endpoint
-app.get('/status_check', (req, res) => {
+app.get('/api/health_check', (req, res) => {
   res.json({ status: 'Server is running!' });
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/status_check`);
+  console.log(`Health check: http://localhost:${PORT}/api/health_check`);
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     console.log('Email transport: AWS SES SMTP configured');
     console.log(`SMTP host: ${process.env.SMTP_HOST || 'email-smtp.ap-southeast-1.amazonaws.com'}`);
