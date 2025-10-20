@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3001;
 // Add Google Form Web App URL (override with env if desired)
 const GOOGLE_FORM_WEBAPP_URL = process.env.GOOGLE_FORM_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbw9sVlPw0U8z3QPt-hdb2DbMmJe_Em7sU9fShA8eKCgldHbgGhuMP2i9zBaeL7JLF_t/exec';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LfKVPArAAAAAEFFIWNo7f9TmT1jojntSCs-mqCM';
+// Local timezone formatting (overridable via env)
+const LOCAL_TIMEZONE = process.env.LOCAL_TIMEZONE || 'Asia/Singapore';
+const LOCAL_LOCALE = process.env.LOCAL_LOCALE || 'en-SG';
 
 // Middleware
 app.use(cors());
@@ -45,7 +48,8 @@ const submitToGoogleForm = async (data) => {
     const params = new URLSearchParams();
 
     // Map to exact Google Sheet column headers
-    const createdDate = new Date().toLocaleString();
+    const createdIso = new Date().toISOString();
+    const createdLocal = new Date().toLocaleString(LOCAL_LOCALE, { timeZone: LOCAL_TIMEZONE, hour12: false });
     const mapped = {
       'Full Name': data.fullName,
       'Company': data.company,
@@ -54,10 +58,12 @@ const submitToGoogleForm = async (data) => {
       'Email': data.email,
       'Phone': data.phone,
       'Message': data.message,
-      // Ensure Created Date is captured regardless of script key expectations
-      'Created Date': createdDate,
-      'CreatedDate': createdDate,
-      'createdDate': createdDate,
+      // Ensure "Created" column is filled even if the script expects different key styles
+      'Created': createdLocal,
+      'Created Date': createdLocal,
+      'CreatedDate': createdLocal,
+      'createdDate': createdLocal,
+      'created': createdLocal,
     };
 
     Object.entries(mapped).forEach(([key, value]) => {
@@ -65,8 +71,7 @@ const submitToGoogleForm = async (data) => {
         params.append(key, String(value));
       }
     });
-    params.append('Created', new Date().toLocaleString());
-    params.append('submittedAt', new Date().toISOString());
+    params.append('submittedAt', createdIso);
 
     const resp = await fetch(GOOGLE_FORM_WEBAPP_URL, {
       method: 'POST',
@@ -159,7 +164,7 @@ app.post('/api/send-email', async (req, res) => {
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px;">
             <p>This email was sent from the Felicitee website contact form.</p>
-            <p>Submitted on: ${new Date().toLocaleString()}</p>
+            <p>Submitted on: ${new Date().toLocaleString(LOCAL_LOCALE, { timeZone: LOCAL_TIMEZONE, hour12: false })}</p>
           </div>
         </div>
       `
