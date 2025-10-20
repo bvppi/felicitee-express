@@ -65,6 +65,7 @@ const submitToGoogleForm = async (data) => {
         params.append(key, String(value));
       }
     });
+    params.append('Created', new Date().toLocaleString());
     params.append('submittedAt', new Date().toISOString());
 
     const resp = await fetch(GOOGLE_FORM_WEBAPP_URL, {
