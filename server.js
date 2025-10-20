@@ -98,24 +98,24 @@ app.post('/api/send-email', async (req, res) => {
     }
 
     // Verify reCAPTCHA
-    if (!recaptchaToken) {
-      return res.status(400).json({ success: false, message: 'reCAPTCHA verification required' });
-    }
+    // if (!recaptchaToken) {
+    //   return res.status(400).json({ success: false, message: 'reCAPTCHA verification required' });
+    // }
 
-    try {
-      const verifyResp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret: RECAPTCHA_SECRET_KEY, response: recaptchaToken }).toString(),
-      });
-      const verifyData = await verifyResp.json();
-      if (!verifyData.success) {
-        return res.status(400).json({ success: false, message: 'Failed reCAPTCHA validation' });
-      }
-    } catch (e) {
-      console.error('reCAPTCHA verify error:', e);
-      return res.status(500).json({ success: false, message: 'reCAPTCHA verification failed' });
-    }
+    // try {
+    //   const verifyResp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    //     body: new URLSearchParams({ secret: RECAPTCHA_SECRET_KEY, response: recaptchaToken }).toString(),
+    //   });
+    //   const verifyData = await verifyResp.json();
+    //   if (!verifyData.success) {
+    //     return res.status(400).json({ success: false, message: 'Failed reCAPTCHA validation' });
+    //   }
+    // } catch (e) {
+    //   console.error('reCAPTCHA verify error:', e);
+    //   return res.status(500).json({ success: false, message: 'reCAPTCHA verification failed' });
+    // }
 
     // Create transporter
     const transporter = createTransporter();
