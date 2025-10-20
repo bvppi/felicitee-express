@@ -9,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // Add Google Form Web App URL (override with env if desired)
 const GOOGLE_FORM_WEBAPP_URL = process.env.GOOGLE_FORM_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbw9sVlPw0U8z3QPt-hdb2DbMmJe_Em7sU9fShA8eKCgldHbgGhuMP2i9zBaeL7JLF_t/exec';
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LfKVPArAAAAAEFFIWNo7f9TmT1jojntSCs-mqCM';
 
 // Middleware
 app.use(cors());
@@ -80,7 +81,7 @@ const submitToGoogleForm = async (data) => {
 // Email sending endpoint
 app.post('/api/send-email', async (req, res) => {
   try {
-    const { fullName, company, lookingFor, quantity, email, phone, message } = req.body;
+    const { fullName, company, lookingFor, quantity, email, phone, message, recaptchaToken } = req.body;
 
     // Validate required fields
     if (!fullName || !email) {
@@ -88,6 +89,26 @@ app.post('/api/send-email', async (req, res) => {
         success: false, 
         message: 'Full name and email are required' 
       });
+    }
+
+    // Verify reCAPTCHA
+    if (!recaptchaToken) {
+      return res.status(400).json({ success: false, message: 'reCAPTCHA verification required' });
+    }
+
+    try {
+      const verifyResp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret: RECAPTCHA_SECRET_KEY, response: recaptchaToken }).toString(),
+      });
+      const verifyData = await verifyResp.json();
+      if (!verifyData.success) {
+        return res.status(400).json({ success: false, message: 'Failed reCAPTCHA validation' });
+      }
+    } catch (e) {
+      console.error('reCAPTCHA verify error:', e);
+      return res.status(500).json({ success: false, message: 'reCAPTCHA verification failed' });
     }
 
     // Create transporter
