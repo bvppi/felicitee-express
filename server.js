@@ -45,6 +45,7 @@ const submitToGoogleForm = async (data) => {
     const params = new URLSearchParams();
 
     // Map to exact Google Sheet column headers
+    const createdDate = new Date().toLocaleString();
     const mapped = {
       'Full Name': data.fullName,
       'Company': data.company,
@@ -53,7 +54,10 @@ const submitToGoogleForm = async (data) => {
       'Email': data.email,
       'Phone': data.phone,
       'Message': data.message,
-      'Created Date': new Date().toLocaleString(),
+      // Ensure Created Date is captured regardless of script key expectations
+      'Created Date': createdDate,
+      'CreatedDate': createdDate,
+      'createdDate': createdDate,
     };
 
     Object.entries(mapped).forEach(([key, value]) => {
