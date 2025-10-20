@@ -2,7 +2,6 @@ import express from 'express';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import * as XLSX from 'xlsx';
 dotenv.config();
 
 const app = express();
@@ -59,11 +58,7 @@ const submitToGoogleForm = async (data) => {
       'Phone': data.phone,
       'Message': data.message,
       // Ensure "Created" column is filled even if the script expects different key styles
-      'Created': createdLocal,
       'Created Date': createdLocal,
-      'CreatedDate': createdLocal,
-      'createdDate': createdLocal,
-      'created': createdLocal,
     };
 
     Object.entries(mapped).forEach(([key, value]) => {
@@ -72,7 +67,7 @@ const submitToGoogleForm = async (data) => {
       }
     });
     params.append('submittedAt', createdIso);
-
+    console.log('params.toString():', params.toString());
     const resp = await fetch(GOOGLE_FORM_WEBAPP_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
